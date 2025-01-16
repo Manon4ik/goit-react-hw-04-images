@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'; 
 import * as basicLightbox from 'basiclightbox'
 import 'basiclightbox/dist/basicLightbox.min.css';
 
@@ -27,4 +28,10 @@ export default function ImageGalleryItem({ largeImageURL, previewURL, type }) {
       <img className="ImageGalleryItem-image" src={previewURL} alt={type} onClick={openModal} />
     </li>
   )
+}
+
+ImageGalleryItem.propTypes = {
+  largeImageURL: PropTypes.string.isRequired,
+  previewURL: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
 }

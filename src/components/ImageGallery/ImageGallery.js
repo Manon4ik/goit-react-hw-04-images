@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'; 
 import ImageGalleryItem from "components/ImageGalleryItem/ImageGalleryItem"
 export default function ImageGallery({data}) {
     //console.log('data:',data);
@@ -9,4 +10,8 @@ export default function ImageGallery({data}) {
             ))}
         </ul>
     )
+}
+
+ImageGallery.propTypes = {
+    data: PropTypes.arrayOf(PropTypes.object).isRequired,
 }

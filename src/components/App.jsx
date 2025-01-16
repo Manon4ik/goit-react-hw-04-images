@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Searchbar from "./Searchbar/Searchbar";
 import ImageGallery from "./ImageGallery/ImageGallery";
 import Button from "./Button/Button";
@@ -7,93 +7,131 @@ import Loader from "./Loader/Loader";
 import api from '../api/api'
 //console.log('api:',api);
 
-export default class App extends Component {
+export default function App() {
 
-  state = {
-    data: [],
-    page: 1,
-    totalPages: 4,
-    search: '',
-    isLoading: false,
-    error: null,
-  }
+  // state = {
+  //   data: [],
+  //   page: 1,
+  //   totalPages: 4,
+  //   search: '',
+  //   isLoading: false,
+  //   error: null,
+  // }
 
-  handleSubmitForm = evt => {
+  const [data, setData] = useState([])
+  const [page, setPage] = useState(1)
+  //const [totalPages, setTotalPages] = useState(4)
+  const [search, setSearch] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const totalPages = 4
+
+
+  const handleSubmitForm = evt => {
     evt.preventDefault();
     const form = evt.currentTarget;
     const search = form.elements.search.value;
     //console.log('submit:', typeof(search));
-    this.setState({ search, data: [], page: 1 })
+    //this.setState({ search, data: [], page: 1 })
+    setSearch(search)
+    setData(data)
+    setPage(1)
   }
 
-  getPhotos = async () => {
-    //console.log('search:', this.state.search);
-    //console.log('page:', this.state.page);
-    const { search, page } = this.state;
+  
 
-    this.setState({ isLoading: true });
+  const loadMore = evn => {
+
+    // this.setState(
+    //   (prevState) => (
+    //     { page: prevState.page + 1 }
+    //   ),
+    // ) 
     
-    try {
-      const data = await api.fetchPhotos(search, page)    
+    setPage((prevData)=>(
+      prevData + 1
+    ))
+    //setPage(page + 1)
+  }
 
-      this.setState((prevState) => (
-        {
-          data: page === 1 ? data.hits : [...prevState.data, ...data.hits],
-        }
-      ));
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
+  // async componentDidMount() {
+  //   this.setState({ isLoading: true });
+
+  //   try {
+  //     const data = await api.fetchPhotos()
+  //     this.setState({ data: data.hits });
+  //   } catch (error) {
+  //     this.setState({ error });
+  //   } finally {
+  //     this.setState({ isLoading: false });
+  //   }
+  // }
+
+  useEffect(() =>{
+    const fetchData = async () =>{
+
+      setIsLoading(true)
+      try {
+        const data = await api.fetchPhotos()
+        setData(data.hits);
+      } catch (error) {
+        setError( error );
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }
 
-  loadMore = evn => {
+    fetchData()
 
-    this.setState(
-      (prevState) => (
-        { page: prevState.page + 1 }
-      ),
-    )  
-  }
+    //getPhotos()
 
-  async componentDidMount() {
-    // this.setState({ isLoading: true });
+  },[])
 
-    // try {
-    //   const data = await api.fetchPhotos()
-    //   this.setState({ data: data.hits });
-    // } catch (error) {
-    //   this.setState({ error });
-    // } finally {
-    //   this.setState({ isLoading: false });
-    // }
-  }
 
-  async componentDidUpdate(prevProps, prevState) {
 
-    if (prevState.search !== this.state.search || prevState.page !== this.state.page) {
+  // async componentDidUpdate(prevProps, prevState) {
 
-      this.getPhotos()
+  //   if (prevState.search !== this.state.search || prevState.page !== this.state.page) {
 
+  //     this.getPhotos()
+
+  //   }
+  // }
+
+  useEffect(()=> {
+        
+    const getPhotos = async () => {
+  
+      setIsLoading(true);
+      
+      try {
+        const data = await api.fetchPhotos(search, page)  
+
+        setData((prevData) =>
+          page === 1 ? data.hits : [...prevData, ...data.hits]
+        );
+  
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+  
     }
-  }
 
-  render() {
+    getPhotos()
 
-    const { data, page, isLoading, totalPages } = this.state
+  }, [search, page])
 
-    //onsole.log('page:', page);
-    //console.log('totalPages:', totalPages);
 
-    return (
-      <main>
-        <Searchbar handleSubmitForm={this.handleSubmitForm} />
-        {isLoading ? <Loader /> : <ImageGallery data={data} />}
-        {data?.length > 0 && page < totalPages && (<div className="LoadMore-wrap"><Button page={page} loadMore={this.loadMore} /></div>)}
-      </main>
-    )
-  }
+  return (
+    <main>
+      <Searchbar handleSubmitForm={handleSubmitForm} />
+      {isLoading ? <Loader /> : <ImageGallery data={data} />}
+      {data?.length > 0 && page < totalPages && (<div className="LoadMore-wrap"><Button page={page} loadMore={loadMore} /></div>)}
+    </main>
+  )
 
 }
 
